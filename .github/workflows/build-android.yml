@@ -1,0 +1,154 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & Sign APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android NDK & platform tools
+        run: |
+          sdkmanager --install \
+            "ndk;27.0.12077973" \
+            "platforms;android-35" \
+            "build-tools;35.0.1" \
+            "platform-tools"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.0.12077973" >> $GITHUB_ENV
+          echo "NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.0.12077973" >> $GITHUB_ENV
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Tauri CLI
+        run: npm install -g @tauri-apps/cli@^2
+
+      - name: Generate icons from SVG
+        run: |
+          sudo apt-get install -y librsvg2-bin
+          # Convert SVG to 512x512 PNG then generate all icon sizes
+          rsvg-convert -w 512 -h 512 src-tauri/icons/app-icon.svg -o /tmp/icon-512.png
+          cargo tauri icon /tmp/icon-512.png
+        env:
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+
+      - name: Initialize Tauri Android project
+        run: cargo tauri android init
+        env:
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+          NDK_HOME: ${{ env.NDK_HOME }}
+
+      - name: Patch Android project with widget
+        run: python3 scripts/patch-android.py
+
+      - name: Cache / restore signing keystore
+        id: ks-cache
+        uses: actions/cache@v4
+        with:
+          path: release.keystore
+          key: signing-keystore-v1
+
+      - name: Generate keystore if not cached
+        if: steps.ks-cache.outputs.cache-hit != 'true'
+        run: |
+          keytool -genkeypair -v \
+            -keystore release.keystore \
+            -alias release \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass android123 \
+            -keypass android123 \
+            -dname "CN=SysMonitor, OU=App, O=Personal, L=Unknown, S=Unknown, C=US"
+
+      - name: Build APK (debug mode, aarch64)
+        run: |
+          cargo tauri android build --debug --target aarch64 --apk
+        env:
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+          NDK_HOME: ${{ env.NDK_HOME }}
+
+      - name: Find and align APK
+        run: |
+          APK=$(find src-tauri/gen/android -name "*.apk" | head -1)
+          echo "Found APK: $APK"
+          zipalign -v -p 4 "$APK" aligned.apk
+          echo "APK_PATH=$APK" >> $GITHUB_ENV
+
+      - name: Sign APK
+        run: |
+          apksigner sign \
+            --ks release.keystore \
+            --ks-key-alias release \
+            --ks-pass pass:android123 \
+            --key-pass pass:android123 \
+            --out system-monitor.apk \
+            aligned.apk
+          apksigner verify system-monitor.apk && echo "APK signature verified OK"
+
+      - name: Get version
+        id: version
+        run: echo "ver=$(date +'%Y%m%d-%H%M')" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.ver }}
+          name: "System Monitor ${{ steps.version.outputs.ver }}"
+          body: |
+            ## Android System Monitor
+
+            **Features:**
+            - Real-time CPU usage (1-minute interval)
+            - CPU temperature monitoring
+            - RAM usage with extended memory (virtual RAM) support
+            - Material Design 3 dark theme
+            - Chart.js doughnut gauge + spark line history
+            - Home screen widget (tap to refresh)
+            - No background service — minimal battery usage
+
+            **Install:** Download `system-monitor.apk`, enable "Install unknown apps", tap to install.
+
+            > Signed with auto-generated release key. Keystore cached for upgrade compatibility.
+          files: system-monitor.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

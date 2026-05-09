@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>System Monitor</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-bar">
+    <span class="app-bar-title">System Monitor</span>
+    <span id="update-badge" class="badge">Live</span>
+  </div>
+
+  <main class="content">
+    <!-- CPU Card -->
+    <div class="card" id="cpu-card">
+      <div class="card-header">
+        <span class="card-icon">⚡</span>
+        <span class="card-title">CPU</span>
+        <span class="stat-badge" id="cpu-badge">--</span>
+      </div>
+      <div class="gauge-row">
+        <div class="gauge-wrap">
+          <canvas id="cpu-gauge" width="160" height="100"></canvas>
+          <div class="gauge-label" id="cpu-pct">--%</div>
+        </div>
+        <div class="spark-wrap">
+          <canvas id="cpu-spark" width="160" height="90"></canvas>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-item">
+          <span class="detail-label">Temperature</span>
+          <span class="detail-value" id="cpu-temp">--°C</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Status</span>
+          <span class="detail-value" id="cpu-status">Loading…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Memory Card -->
+    <div class="card" id="mem-card">
+      <div class="card-header">
+        <span class="card-icon">💾</span>
+        <span class="card-title">Memory</span>
+        <span class="stat-badge" id="mem-badge">--</span>
+      </div>
+      <div class="mem-bar-wrap">
+        <div class="mem-bar-track">
+          <div class="mem-bar-fill" id="mem-bar" style="width:0%"></div>
+        </div>
+        <span class="mem-bar-label" id="mem-pct">--%</span>
+      </div>
+      <div class="mem-grid">
+        <div class="mem-cell">
+          <span class="detail-label">Used</span>
+          <span class="detail-value" id="mem-used">--</span>
+        </div>
+        <div class="mem-cell">
+          <span class="detail-label">Available</span>
+          <span class="detail-value" id="mem-avail">--</span>
+        </div>
+        <div class="mem-cell">
+          <span class="detail-label">Total RAM</span>
+          <span class="detail-value" id="mem-total">--</span>
+        </div>
+        <div class="mem-cell ext-mem" id="ext-mem-cell" style="display:none">
+          <span class="detail-label">Extended (vRAM)</span>
+          <span class="detail-value" id="mem-ext">--</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <button class="fab" id="fab-refresh" title="Refresh now">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+      <path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+    </svg>
+  </button>
+
+  <div class="last-update">Last updated: <span id="last-time">never</span></div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

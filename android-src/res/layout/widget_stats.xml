@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_background"
+    android:padding="12dp"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/widget_mem_pct"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="--"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#4fc3f7" />
+
+    <TextView
+        android:id="@+id/widget_mem_detail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="-- / --"
+        android:textSize="12sp"
+        android:textColor="#b0b8d1" />
+
+    <TextView
+        android:id="@+id/widget_cpu_temp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="--°C"
+        android:textSize="14sp"
+        android:textColor="#80cbc4"
+        android:layout_marginTop="4dp" />
+
+    <TextView
+        android:id="@+id/widget_ext_mem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="11sp"
+        android:textColor="#a0b0c8" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="↻ tap to refresh"
+        android:textSize="10sp"
+        android:textColor="#606880"
+        android:layout_marginTop="6dp" />
+</LinearLayout>
