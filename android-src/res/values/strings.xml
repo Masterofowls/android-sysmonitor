@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">System Monitor</string>
+    <string name="main_activity_title">System Monitor</string>
     <string name="widget_description">System stats: RAM usage and CPU temperature. Tap to refresh.</string>
 </resources>
