@@ -63,12 +63,12 @@ jobs:
           sudo apt-get install -y librsvg2-bin
           # Convert SVG to 512x512 PNG then generate all icon sizes
           rsvg-convert -w 512 -h 512 src-tauri/icons/app-icon.svg -o /tmp/icon-512.png
-          cargo tauri icon /tmp/icon-512.png
+          tauri icon /tmp/icon-512.png
         env:
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
 
       - name: Initialize Tauri Android project
-        run: cargo tauri android init
+        run: tauri android init
         env:
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
           ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
@@ -99,7 +99,7 @@ jobs:
 
       - name: Build APK (debug mode, aarch64)
         run: |
-          cargo tauri android build --debug --target aarch64 --apk
+          tauri android build --debug --target aarch64 --apk
         env:
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
           ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
