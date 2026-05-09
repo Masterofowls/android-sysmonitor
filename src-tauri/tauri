@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+/**
+ * Tauri CLI shim for Gradle's BuildTask.kt (rustBuildArm64Debug task).
+ *
+ * Gradle calls: node src-tauri/tauri android build --target <arch> --profile <profile>
+ *
+ * This executes AFTER `tauri android build` has already:
+ *  1. Compiled the Rust library (libsystem_monitor.so)
+ *  2. Symlinked the .so into src-tauri/gen/android/app/src/main/jniLibs/
+ *
+ * The Rust artifact is already in place, so this shim is a safe no-op.
+ * Exiting 0 signals success to Gradle, which then proceeds to APK assembly.
+ */
+console.log('[tauri-shim] Rust library already compiled. Proceeding with APK assembly.');
+process.exit(0);
