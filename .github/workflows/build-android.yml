@@ -105,23 +105,20 @@ jobs:
           ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
           NDK_HOME: ${{ env.NDK_HOME }}
 
-      - name: Find and align APK
+      - name: Find, align and sign APK
         run: |
+          BUILD_TOOLS="$ANDROID_SDK_ROOT/build-tools/35.0.1"
           APK=$(find src-tauri/gen/android -name "*.apk" | head -1)
           echo "Found APK: $APK"
-          zipalign -v -p 4 "$APK" aligned.apk
-          echo "APK_PATH=$APK" >> $GITHUB_ENV
-
-      - name: Sign APK
-        run: |
-          apksigner sign \
+          "$BUILD_TOOLS/zipalign" -v -p 4 "$APK" aligned.apk
+          "$BUILD_TOOLS/apksigner" sign \
             --ks release.keystore \
             --ks-key-alias release \
             --ks-pass pass:android123 \
             --key-pass pass:android123 \
             --out system-monitor.apk \
             aligned.apk
-          apksigner verify system-monitor.apk && echo "APK signature verified OK"
+          "$BUILD_TOOLS/apksigner" verify system-monitor.apk && echo "APK signature verified OK"
 
       - name: Get version
         id: version
